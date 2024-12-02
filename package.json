@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "@huggingface/inference": "^2.8.1",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "openai": "^4.73.1"
+  },
+  "name": "webstorm",
+  "version": "1.0.0",
+  "main": "autismbot.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
