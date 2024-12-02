@@ -41,6 +41,7 @@ client.on('messageCreate', async (message) => {
     if (message.author.id !== OWNER_ID) return;
     if (!CHANNELS.includes(message.channelId) && !message.mentions.users.has(client.user.id)) return;
 
+    let botActive = false;
     try {
         // Kiểm tra nếu nhận lệnh bật bot (giả)
         if (message.content.includes("Hầu gái của tôi đâu")) {
@@ -68,7 +69,7 @@ client.on('messageCreate', async (message) => {
         const response = await hf.textGeneration({
             model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
             inputs: message.content,
-            parameters: { max_new_tokens: 1000 }
+            parameters: {max_new_tokens: 1000}
         });
 
         let generatedText = response.generated_text.trim();
