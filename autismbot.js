@@ -43,7 +43,7 @@ client.on('messageCreate', async (message) => {
 
     try {
         // Kiểm tra nếu nhận lệnh bật bot (giả)
-        if (message.content.includes("Bắt đầu hoạt động")) {
+        if (message.content.includes("Hầu gái của tôi đâu")) {
             await message.channel.sendTyping(); // Hiệu ứng typing
             setTimeout(async () => {
                 await message.reply("Hân hạnh được phục vụ chủ nhân!");
