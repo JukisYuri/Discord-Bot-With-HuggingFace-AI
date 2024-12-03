@@ -1,6 +1,10 @@
 require('dotenv').config();
 const { Client } = require('discord.js');
 const { HfInference } = require('@huggingface/inference');
+const { splitMessage } = require('./utils');
+const { CHANNELS, OWNER_ID } = require('./permisson');
+const { removeRepeatedQuestion } = require(`./removeRepeated`);
+
 if(process.env.HUGGINGFACE_TOKEN !== undefined) {
     console.log("HuggingFace API is ready, Using model: 'Qwen/Qwen2.5-Coder-32B-Instruct', Bot Author: Jukis Yuri");
 }
@@ -16,12 +20,6 @@ client.on('ready', () => {
 });
 
 const IGNORE_PREFIX = "!";
-
-// Kênh ID được cấp quyền cho bot hoạt động
-const CHANNELS = [`1177200241905242152`, `1084866665034031106`, `1177195977136939028`, `1313376059030507590`];
-
-// ID người sẽ dùng đến bot
-const OWNER_ID = '607183227911667746';
 
 // Xử lý tin nhắn
 client.on('messageCreate', async (message) => {
@@ -54,7 +52,7 @@ client.on('messageCreate', async (message) => {
         }
 
         // Kiểm tra nội dung tin nhắn yêu cầu bot tắt
-        if (message.content.includes("Bây giờ em có thể rút lui")) {
+        if (message.content.includes("Bây giờ cô có thể rút lui")) {
             await message.channel.sendTyping();
             await message.reply("Hẹn gặp lại, chủ nhân!");
             console.log('Bot is shutting down...');
@@ -65,32 +63,49 @@ client.on('messageCreate', async (message) => {
         if (message.content.includes("Hãy nói đầy đủ chi tiết thông tin về chủ nhân Jukis Yuri")) {
             await message.channel.sendTyping();
             setTimeout(async () => {
-            await message.reply(
-                "**Đây là toàn bộ thông tin về ngài ạ:**\n" +
-                "- **Carrd**: [jukisyuri.carrd.co](https://jukisyuri.carrd.co/)\n" +
-                "- **Github**: [JukisYuri](https://github.com/JukisYuri)\n" +
-                "- **Facebook**: [yourlifehehe](https://www.facebook.com/yourlifehehe/)\n" +
-                "> Là một sinh viên công nghệ thông tin, chuyên ngành Software Engineer, năm 2 tại trường Đại Học Nông Lâm TP.HCM và được sư phụ **Regiko** dẫn dắt.");
-                }, 2000);
+                await message.reply(
+                    "**Đây là toàn bộ thông tin về ngài ạ:**\n" +
+                    "- **Carrd**: [jukisyuri.carrd.co](https://jukisyuri.carrd.co/)\n" +
+                    "- **Github**: [JukisYuri](https://github.com/JukisYuri)\n" +
+                    "- **Facebook**: [yourlifehehe](https://www.facebook.com/yourlifehehe/)\n" +
+                    "> Là một sinh viên công nghệ thông tin, chuyên ngành Software Engineer, năm 2 tại trường Đại Học Nông Lâm TP.HCM và được sư phụ **Regiko** dẫn dắt.");
+            }, 2000);
             return;
         }
 
         // Gửi typing trước khi trả lời
         await message.channel.sendTyping();
+        try {
+            // Sử dụng Hugging Face API để tạo phản hồi
+            const response = await hf.textGeneration({
+                model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
+                inputs: message.content,
+                parameters: {max_new_tokens: 600}
+            });
 
-        // Sử dụng Hugging Face API để tạo phản hồi
-        const response = await hf.textGeneration({
-            model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
-            inputs: message.content,
-            parameters: {max_new_tokens: 1000}
-        });
+            let generatedText = response.generated_text.trim();
 
-        let generatedText = response.generated_text.trim();
-        await message.reply(generatedText);
+            // Xóa câu hỏi lặp lại
+            generatedText = removeRepeatedQuestion(message.content, generatedText);
 
+            // Thay thế từ "bạn" bằng "chủ nhân"
+            generatedText = generatedText.replace(/\b(bạn)\b/gi, 'chủ nhân');
+
+            // Chia tin nhắn thành các phần nhỏ hơn 2000 ký tự
+            const messageChunks = splitMessage(generatedText);
+
+            // Gửi từng phần
+            for (const chunk of messageChunks) {
+                await message.reply(chunk);
+            }
+
+        } catch (error) {
+            console.error(error);
+            await message.reply('Xin lỗi chủ nhân, có quá nhiều kiến thức mới để em có thể xử lý tốt chúng, mong ngài thông cảm và bỏ qua');
+        }
     } catch (error) {
         console.error(error);
-        await message.reply('Xin lỗi chủ nhân, có quá nhiều kiến thức mới để em có thể xử lý tốt chúng, mong ngài thông cảm và bỏ qua');
+        await message.reply('Xin lỗi, em không tìm thấy tin nhắn tham chiếu. Chủ nhân có thể thử lại không?');
     }
 });
 
