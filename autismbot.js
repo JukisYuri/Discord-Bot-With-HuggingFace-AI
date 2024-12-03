@@ -48,7 +48,7 @@ client.on('messageCreate', async (message) => {
             botActive = true; // Bật bot
             await message.channel.sendTyping(); // Hiệu ứng typing
             setTimeout(async () => {
-                await message.reply("Chủ nhân cho gọi em~");
+                await message.reply("Chủ nhân cho gọi em!");
             }, 2000); // Thời gian typing giả lập
             return;
         }
@@ -59,6 +59,19 @@ client.on('messageCreate', async (message) => {
             await message.reply("Hẹn gặp lại, chủ nhân!");
             console.log('Bot is shutting down...');
             await client.destroy(); // Tắt bot
+            return;
+        }
+
+        if (message.content.includes("Hãy nói đầy đủ chi tiết thông tin về chủ nhân Jukis Yuri")) {
+            await message.channel.sendTyping();
+            setTimeout(async () => {
+            await message.reply(
+                "**Đây là toàn bộ thông tin về ngài ạ:**\n" +
+                "- **Carrd**: [jukisyuri.carrd.co](https://jukisyuri.carrd.co/)\n" +
+                "- **Github**: [JukisYuri](https://github.com/JukisYuri)\n" +
+                "- **Facebook**: [yourlifehehe](https://www.facebook.com/yourlifehehe/)\n" +
+                "> Là một sinh viên công nghệ thông tin, chuyên ngành Software Engineer, năm 2 tại trường Đại Học Nông Lâm TP.HCM và được sư phụ **Regiko** dẫn dắt.");
+                }, 2000);
             return;
         }
 
