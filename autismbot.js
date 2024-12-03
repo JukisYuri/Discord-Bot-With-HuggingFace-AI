@@ -77,7 +77,7 @@ client.on('messageCreate', async (message) => {
 
     } catch (error) {
         console.error(error);
-        await message.reply('Xin lỗi, có lỗi xảy ra trong quá trình xử lý.');
+        await message.reply('Xin lỗi chủ nhân, có quá nhiều kiến thức mới để em có thể xử lý tốt chúng, mong ngài thông cảm và bỏ qua');
     }
 });
 
