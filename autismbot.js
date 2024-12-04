@@ -21,6 +21,7 @@ client.on('ready', () => {
 });
 
 const IGNORE_PREFIX = "!";
+const TIMEOUT = 60 * 60 * 1000; // 1 giờ (60 phút x 60 giây x 1000 ms)
 
 // Xử lý tin nhắn
 client.on('messageCreate', async (message) => {
@@ -46,6 +47,11 @@ client.on('messageCreate', async (message) => {
             if (replyMessage) {
                 await message.reply(replyMessage);
                 unauthorizedReplies.set(userId, replyCount + 1);
+
+                // Xóa phần tử trong map sau 1 giờ
+                setTimeout(() => {
+                    unauthorizedReplies.delete(userId);
+                }, TIMEOUT);
             }
             if (replyCount >= 5) {
                 return;
