@@ -36,15 +36,16 @@ client.on('messageCreate', async (message) => {
             const replyCount = unauthorizedReplies.get(userId) || 0;
 
             const replies = [
-                "Bạn không được duyệt quyền để nói chuyện với tôi, hãy liên hệ chủ nhân Jukis Yuri",
-                "Bạn vẫn còn cố tình à?",
-                "Đừng làm phiền tôi nữa! Trông bạn giống như một kẻ biến thái cố tình quấy rối tôi",
+                `Bạn không được duyệt quyền để nói chuyện với tôi, hãy liên hệ chủ nhân Jukis Yuri`,
+                `Bạn vẫn còn cố tình à?`,
+                `Đừng làm phiền tôi nữa! Trông bạn giống như một kẻ biến thái cố tình quấy rối tôi`,
                 `<@${OWNER_ID}>! Chủ nhân ơi, người này đang cố gắng làm phiền em: <@${userId}>`,
-                "Trông bạn thật kiên trì làm sao khi cố gắng làm phiền tôi? rác rưởi..."
+                `Trông bạn thật kiên trì làm sao khi cố gắng làm phiền tôi? rác rưởi...`,
                 `Hm... có vẻ tôi đã đánh giá thấp cái sự cứng đầu của bạn, đồ rác rưởi <@${userId}>`,
                 `Wow, để tôi đếm xem sự rác rưởi của bạn ping tôi bao nhiêu lần nào? tận 7 lần cơ á? chắc là bạn nghĩ đó là con số may mắn đó nhỉ?`,
                 `Thôi tôi mệt mỏi lắm rồi, cút lẹ lẹ cái, tôi đéo có hứng reply lại bạn, Tạm biệt! <@${userId}>`,
-                `Ngài <@${OWNER_ID} kick <@${userId} ra ngoài được không ạ!, hắn làm phiến chúng ta nãy giờ kìa!!!`
+                `Ngài <@${OWNER_ID}> kick <@${userId}> ra ngoài được không ạ!, hắn làm phiến chúng ta nãy giờ kìa!!!`,
+                `Phắn đây, coi như nãy giờ chưa có chuyện gì xảy ra, cái đứa này quá cứng đầu, hết cứu nổi`
             ];
 
             const replyMessage = replies[replyCount] || null;
