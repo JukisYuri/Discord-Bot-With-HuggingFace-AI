@@ -14,6 +14,7 @@ const client = new Client({
 });
 
 const hf = new HfInference(process.env.HUGGINGFACE_TOKEN);
+const unauthorizedReplies = new Map();
 
 client.on('ready', () => {
     console.log('The bot is ready!');
@@ -30,8 +31,25 @@ client.on('messageCreate', async (message) => {
     if (message.reference) {
         const referencedMessage = await message.channel.messages.fetch(message.reference.messageId);
         if (referencedMessage.author.id === client.user.id && message.author.id !== OWNER_ID) {
-            await message.reply("Bạn không được duyệt quyền để nói chuyện với tôi, hãy liên hệ chủ nhân Jukis Yuri");
-            return;
+            const userId = message.author.id;
+            const replyCount = unauthorizedReplies.get(userId) || 0;
+
+            const replies = [
+                "Bạn không được duyệt quyền để nói chuyện với tôi, hãy liên hệ chủ nhân Jukis Yuri",
+                "Bạn vẫn còn cố tình à?",
+                "Đừng làm phiền tôi nữa! Trông bạn giống như một kẻ biến thái cố tình quấy rối tôi",
+                `<@${OWNER_ID}>! Chủ nhân ơi, người này đang cố gắng làm phiền em: <@${userId}>`,
+                "Trông bạn thật kiên trì làm sao khi cố gắng làm phiền tôi? rác rưởi..."
+            ];
+
+            const replyMessage = replies[replyCount] || null;
+            if (replyMessage) {
+                await message.reply(replyMessage);
+                unauthorizedReplies.set(userId, replyCount + 1);
+            }
+            if (replyCount >= 5) {
+                return;
+            }
         }
     }
 
