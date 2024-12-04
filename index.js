@@ -42,6 +42,8 @@ client.on('messageCreate', async (message) => {
                 `<@${OWNER_ID}>! Chủ nhân ơi, người này đang cố gắng làm phiền em: <@${userId}>`,
                 "Trông bạn thật kiên trì làm sao khi cố gắng làm phiền tôi? rác rưởi..."
                 `Hm... có vẻ tôi đã đánh giá thấp cái sự cứng đầu của bạn, đồ rác rưởi <@${userId}>`,
+                `Wow, để tôi đếm xem sự rác rưởi của bạn ping tôi bao nhiêu lần nào? tận 7 lần cơ á? chắc là bạn nghĩ đó là con số may mắn đó nhỉ?`,
+                `Thôi tôi mệt mỏi lắm rồi, cút lẹ lẹ cái, tôi đéo có hứng reply lại bạn, Tạm biệt! <@${userId}>`,
             ];
 
             const replyMessage = replies[replyCount] || null;
@@ -54,7 +56,7 @@ client.on('messageCreate', async (message) => {
                     unauthorizedReplies.delete(userId);
                 }, TIMEOUT);
             }
-            if (replyCount >= 6) {
+            if (replyCount >= 7) {
                 return;
             }
         }
