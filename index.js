@@ -58,7 +58,7 @@ client.on('messageCreate', async (message) => {
                     unauthorizedReplies.delete(userId);
                 }, TIMEOUT);
             }
-            if (replyCount > 8) {
+            if (replyCount > 9) {
                 return;
             }
         }
