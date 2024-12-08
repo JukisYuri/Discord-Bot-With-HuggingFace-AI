@@ -2,10 +2,10 @@ require('dotenv').config();
 const { Client } = require('discord.js');
 const { HfInference } = require('@huggingface/inference');
 const { splitMessage } = require('./utils');
-const { CHANNELS, OWNER_ID } = require('./permisson');
+const { CHANNELS, OWNER_ID , sourceChannelId, destinationChannelId} = require('./permisson');
 const { removeRepeatedQuestion } = require(`./removeRepeated`);
 
-if(process.env.HUGGINGFACE_TOKEN !== undefined) {
+if (process.env.HUGGINGFACE_TOKEN !== undefined) {
     console.log("HuggingFace API is ready, Using model: 'Qwen/Qwen2.5-Coder-32B-Instruct', Bot Author: Jukis Yuri");
 }
 
@@ -22,6 +22,36 @@ client.on('ready', () => {
 
 const IGNORE_PREFIX = "!";
 const TIMEOUT = 60 * 60 * 1000; // 1 giờ (60 phút x 60 giây x 1000 ms)
+
+// Chức năng để lấy và gửi tin nhắn từ một kênh đến một kênh khác
+const transferMessages = async (sourceChannelId, destinationChannelId) => {
+    try {
+        const sourceChannel = await client.channels.fetch(sourceChannelId);
+        const destinationChannel = await client.channels.fetch(destinationChannelId);
+
+        // Lấy các tin nhắn từ kênh nguồn (tối đa 100 tin nhắn)
+        const fetchedMessages = await sourceChannel.messages.fetch({ limit: 1024 });
+
+        // Kết hợp nội dung tin nhắn vào một chuỗi duy nhất
+        let combinedMessage = '';
+        fetchedMessages.forEach(msg => {
+            combinedMessage += `${msg.author.username}: ${msg.content}\n`;
+        });
+
+        // Chia tin nhắn thành các phần nhỏ hơn nếu nội dung quá dài
+        const messageChunks = splitMessage(combinedMessage);
+
+        // Gửi từng phần vào kênh đích
+        for (const chunk of messageChunks) { 
+            await message.channel.sendTyping();
+            await destinationChannel.send(chunk);
+        }
+
+        console.log('Messages transferred successfully!');
+    } catch (error) {
+        console.error('Có lỗi khi chuyển tin nhắn:', error);
+    }
+};
 
 // Xử lý tin nhắn
 client.on('messageCreate', async (message) => {
@@ -44,12 +74,13 @@ client.on('messageCreate', async (message) => {
                 `Hm... có vẻ tôi đã đánh giá thấp cái sự cứng đầu của bạn, đồ rác rưởi <@${userId}>`,
                 `Wow, để tôi đếm xem sự rác rưởi của bạn ping tôi bao nhiêu lần nào? tận 7 lần cơ á? chắc là bạn nghĩ đó là con số may mắn đó nhỉ?`,
                 `Thôi tôi mệt mỏi lắm rồi, cút lẹ lẹ cái, tôi đéo có hứng reply lại bạn, Tạm biệt! <@${userId}>`,
-                `Ngài <@${OWNER_ID}> kick <@${userId}> ra ngoài được không ạ!, hắn làm phiến chúng ta nãy giờ kìa!!!`,
+                `Ngài <@${OWNER_ID}> kick <@${userId}> ra ngoài được không ạ!, hắn làm phiền chúng ta nãy giờ kìa!!!`,
                 `Phắn đây, coi như nãy giờ chưa có chuyện gì xảy ra, cái đứa này quá cứng đầu, hết cứu nổi`
             ];
 
             const replyMessage = replies[replyCount] || null;
             if (replyMessage) {
+                await message.channel.sendTyping();
                 await message.reply(replyMessage);
                 unauthorizedReplies.set(userId, replyCount + 1);
 
@@ -77,6 +108,14 @@ client.on('messageCreate', async (message) => {
             setTimeout(async () => {
                 await message.reply("Chủ nhân cho gọi em!");
             }, 2000); // Thời gian typing giả lập
+            return;
+        }
+
+               // Lệnh chuyển tin nhắn từ một kênh sang kênh khác
+        if (message.content.includes("Chuyển hết tin nhắn từ kênh này sang kênh của tôi")) {
+            await message.channel.sendTyping();
+            await message.reply("Vâng, đã nghe lệnh!!")
+            await transferMessages(sourceChannelId, destinationChannelId);
             return;
         }
 
@@ -109,7 +148,7 @@ client.on('messageCreate', async (message) => {
             const response = await hf.textGeneration({
                 model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
                 inputs: message.content,
-                parameters: {max_new_tokens: 1024}
+                parameters: { max_new_tokens: 1024 }
             });
 
             let generatedText = response.generated_text.trim();
