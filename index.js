@@ -46,7 +46,6 @@ const transferMessages = async (sourceChannelId, destinationChannelId) => {
             await destinationChannel.send(chunk);
         }
         
-        await message.reply(`Đã thành công gửi hết toàn bộ tin nhắn từ kênh ${sourceChannelId} đến kênh ${destinationChannelId}`);
         console.log('Messages transferred successfully!');
     } catch (error) {
         console.error('Có lỗi khi chuyển tin nhắn:', error);
