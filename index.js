@@ -30,12 +30,12 @@ const transferMessages = async (sourceChannelId, destinationChannelId) => {
         const destinationChannel = await client.channels.fetch(destinationChannelId);
 
         // Lấy các tin nhắn từ kênh nguồn (tối đa 100 tin nhắn)
-        const fetchedMessages = await sourceChannel.messages.fetch({ limit: 1024 });
+        const fetchedMessages = await sourceChannel.messages.fetch({ limit: 100 });
 
         // Kết hợp nội dung tin nhắn vào một chuỗi duy nhất
         let combinedMessage = '';
         fetchedMessages.forEach(msg => {
-            combinedMessage += `${msg.author.username}: ${msg.content}\n`;
+            combinedMessage += `[${msg.createdAt.toLocaleString()}] ${msg.author.username}: ${msg.content}\n`;
         });
 
         // Chia tin nhắn thành các phần nhỏ hơn nếu nội dung quá dài
@@ -43,20 +43,88 @@ const transferMessages = async (sourceChannelId, destinationChannelId) => {
 
         // Gửi từng phần vào kênh đích
         for (const chunk of messageChunks) { 
-            await message.channel.sendTyping();
             await destinationChannel.send(chunk);
         }
-
+        
+        await message.reply(`Đã thành công gửi hết toàn bộ tin nhắn từ kênh ${sourceChannelId} đến kênh ${destinationChannelId}`);
         console.log('Messages transferred successfully!');
     } catch (error) {
         console.error('Có lỗi khi chuyển tin nhắn:', error);
     }
-};
+}
 
+let trackedUser = null;
 // Xử lý tin nhắn
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bỏ qua tin nhắn từ bot
     if (!message.content || message.content.startsWith(IGNORE_PREFIX)) return; // Bỏ qua lệnh hoặc tin nhắn không hợp lệ
+
+    // Lệnh theo dõi người dùng
+    if (message.content.startsWith("Hầu gái nhận lệnh, hãy theo dõi")) {
+        const mention = message.mentions.users.first();
+        await message.channel.sendTyping();
+        if (mention) {
+            trackedUser = mention.id;
+            await message.reply(`Em sẽ bắt đầu theo dõi <@${trackedUser}>.`);
+        } else {
+            await message.reply('Chủ nhân cần tag đúng người để theo dõi.');
+        }
+        return;
+    }
+        
+    // Lệnh dừng theo dõi người dùng
+    if (message.content.startsWith("Hầu gái nhận lệnh, hãy dừng theo dõi")) {
+        const mention = message.mentions.users.first();
+        await message.channel.sendTyping();
+        if (mention) {
+            if (trackedUser === mention.id) {
+                trackedUser = null;  // Xóa người dùng khỏi danh sách theo dõi
+                await message.reply(`Em đã bỏ theo dõi <@${mention.id}>.`);
+            } else {
+                await message.reply('Người này không có trong danh sách theo dõi.');
+            }
+        } else {
+            await message.reply('Chủ nhân cần tag đúng người để dừng theo dõi.');
+        }
+    }
+
+    // Lệnh lấy dữ liệu người dùng
+    if (message.content.includes("Hãy lấy dữ liệu của người đó và gửi sang cho tôi")) {
+        await message.channel.sendTyping();
+        if (!trackedUser) {
+            await message.reply('Hiện tại em không theo dõi ai cả. Chủ nhân hãy dùng lệnh "hãy theo dõi @người_dùng" trước.');
+        } else {
+            await message.reply(`Vâng, đã thực hiện lệnh theo chủ nhân yêu cầu`)
+        }
+
+        const sourceChannel = message.channel; // Kênh hiện tại
+        const destinationChannel = await client.channels.fetch(destinationChannelId); // Kênh đích
+
+        // Lấy các tin nhắn của người dùng được theo dõi
+        const fetchedMessages = await sourceChannel.messages.fetch({ limit: 100 });
+        const userMessages = fetchedMessages.filter(msg => msg.author.id === trackedUser);
+
+        if (userMessages.size === 0) {
+            await message.channel.sendTyping();
+            await message.reply('Không tìm thấy tin nhắn nào từ người dùng được theo dõi.');
+            return;
+        }
+
+        // Kết hợp nội dung tin nhắn
+        let combinedMessage = '';
+        userMessages.forEach(msg => {
+            combinedMessage += `[${msg.createdAt.toLocaleString()}] ${msg.author.username}: ${msg.content}\n`;
+        });
+
+        // Chia nhỏ tin nhắn và gửi sang kênh đích
+        const messageChunks = splitMessage(combinedMessage);
+        for (const chunk of messageChunks) {
+            await destinationChannel.send(chunk);
+        }
+
+        await message.reply(`Em đã gửi dữ liệu của <@${trackedUser}> sang kênh đích.`);
+        return;
+    }
 
     // Kiểm tra xem tin nhắn có phải là một reply đến bot
     if (message.reference) {
@@ -111,7 +179,7 @@ client.on('messageCreate', async (message) => {
             return;
         }
 
-               // Lệnh chuyển tin nhắn từ một kênh sang kênh khác
+        // Lệnh chuyển tin nhắn từ một kênh sang kênh khác
         if (message.content.includes("Chuyển hết tin nhắn từ kênh này sang kênh của tôi")) {
             await message.channel.sendTyping();
             await message.reply("Vâng, đã nghe lệnh!!")
