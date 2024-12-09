@@ -86,6 +86,7 @@ client.on('messageCreate', async (message) => {
         } else {
             await message.reply('Chủ nhân cần tag đúng người để dừng theo dõi.');
         }
+        return;
     }
 
     // Lệnh lấy dữ liệu người dùng
