@@ -53,10 +53,28 @@ const transferMessages = async (sourceChannelId, destinationChannelId) => {
 }
 
 let trackedUser = null;
+let isOnBreak = false;
 // Xử lý tin nhắn
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bỏ qua tin nhắn từ bot
     if (!message.content || message.content.startsWith(IGNORE_PREFIX)) return; // Bỏ qua lệnh hoặc tin nhắn không hợp lệ
+    
+    // Lệnh cho bot tạm dừng hoạt động
+    if (isOnBreak) {
+        if (message.content.includes("Hãy quay lại làm việc")) {
+            isOnBreak = false;
+            await message.channel.sendTyping();
+            await message.reply("Em đã quay lại làm việc, thưa chủ nhân!");
+        }
+        return;
+    }
+
+    if (message.content.includes("Em có thể nghỉ giải lao")) {
+        isOnBreak = true;
+        await message.channel.sendTyping();
+        await message.reply("Vâng, em sẽ nghỉ giải lao theo lệnh của chủ nhân.");
+        return;
+    }
 
     // Lệnh theo dõi người dùng
     if (message.content.startsWith("Hầu gái nhận lệnh, hãy theo dõi")) {
