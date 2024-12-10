@@ -61,11 +61,11 @@ client.on('messageCreate', async (message) => {
     if (message.author.id !== OWNER_ID) return;
     if (!CHANNELS.includes(message.channelId) && !message.mentions.users.has(client.user.id)) return;
 
+    await message.channel.sendTyping();
     // Lệnh cho bot hoạt động lại
     if (isOnBreak) {
         if (message.content.includes("Bắt đầu quay lại làm việc")) {
             isOnBreak = false;
-            await message.channel.sendTyping();
             await message.reply("Vâng!, thưa chủ nhân, em đã quay lại làm việc");
         }
         return;
@@ -74,7 +74,6 @@ client.on('messageCreate', async (message) => {
     // Lệnh cho bot tạm dừng hoạt động
     if (message.content.includes("Bây giờ cô có thể nghỉ ngơi")) {
         isOnBreak = true;
-        await message.channel.sendTyping();
         await message.reply("Như một món quà chủ nhân ban cho em, em sẽ tạm dừng hoạt động");
         return;
     }
@@ -82,7 +81,6 @@ client.on('messageCreate', async (message) => {
     // Lệnh theo dõi người dùng
     if (message.content.startsWith("Hầu gái nhận lệnh, hãy theo dõi")) {
         const mention = message.mentions.users.first();
-        await message.channel.sendTyping();
         if (mention) {
             trackedUser = mention.id;
             await message.reply(`Em sẽ bắt đầu theo dõi <@${trackedUser}>.`);
@@ -95,7 +93,6 @@ client.on('messageCreate', async (message) => {
     // Lệnh dừng theo dõi người dùng
     if (message.content.startsWith("Hầu gái nhận lệnh, hãy dừng theo dõi")) {
         const mention = message.mentions.users.first();
-        await message.channel.sendTyping();
         if (mention) {
             if (trackedUser === mention.id) {
                 trackedUser = null;  // Xóa người dùng khỏi danh sách theo dõi
@@ -111,7 +108,6 @@ client.on('messageCreate', async (message) => {
 
     // Lệnh lấy dữ liệu người dùng
     if (message.content.includes("Hãy lấy dữ liệu của người đó và gửi sang cho tôi")) {
-        await message.channel.sendTyping();
         if (!trackedUser) {
             await message.reply('Hiện tại em không theo dõi ai cả. Chủ nhân hãy dùng lệnh "hãy theo dõi @người_dùng" trước.');
         } else {
@@ -126,7 +122,6 @@ client.on('messageCreate', async (message) => {
         const userMessages = fetchedMessages.filter(msg => msg.author.id === trackedUser);
 
         if (userMessages.size === 0) {
-            await message.channel.sendTyping();
             await message.reply('Không tìm thấy tin nhắn nào từ người dùng được theo dõi.');
             return;
         }
@@ -169,7 +164,6 @@ client.on('messageCreate', async (message) => {
 
             const replyMessage = replies[replyCount] || null;
             if (replyMessage) {
-                await message.channel.sendTyping();
                 await message.reply(replyMessage);
                 unauthorizedReplies.set(userId, replyCount + 1);
 
@@ -184,21 +178,15 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    let botActive = false;
     try {
         // Kiểm tra nếu nhận lệnh bật bot (giả)
         if (message.content.includes("Hầu gái đâu")) {
-            botActive = true; // Bật bot
-            await message.channel.sendTyping(); // Hiệu ứng typing
-            setTimeout(async () => {
-                await message.reply("Chủ nhân cho gọi em!");
-            }, 2000); // Thời gian typing giả lập
+            await message.reply("Chủ nhân cho gọi em!"); // Thời gian typing giả lập
             return;
         }
 
         // Lệnh chuyển tin nhắn từ một kênh sang kênh khác
         if (message.content.includes("Chuyển hết tin nhắn từ kênh này sang kênh của tôi")) {
-            await message.channel.sendTyping();
             await message.reply("Vâng, đã nghe lệnh!!")
             await transferMessages(sourceChannelId, destinationChannelId);
             return;
@@ -206,7 +194,6 @@ client.on('messageCreate', async (message) => {
 
         // Kiểm tra nội dung tin nhắn yêu cầu bot tắt
         if (message.content.includes("Bây giờ cô có thể rút lui")) {
-            await message.channel.sendTyping();
             await message.reply("Hẹn gặp lại, chủ nhân!");
             console.log('Bot is shutting down...');
             await client.destroy(); // Tắt bot
@@ -214,7 +201,6 @@ client.on('messageCreate', async (message) => {
         }
 
         if (message.content.includes("Hãy nói đầy đủ chi tiết thông tin về chủ nhân Jukis Yuri")) {
-            await message.channel.sendTyping();
             setTimeout(async () => {
                 await message.reply(
                     "**Đây là toàn bộ thông tin về ngài ạ:**\n" +
@@ -226,8 +212,6 @@ client.on('messageCreate', async (message) => {
             return;
         }
 
-        // Gửi typing trước khi trả lời
-        await message.channel.sendTyping();
         try {
             // Sử dụng Hugging Face API để tạo phản hồi
             const response = await hf.textGeneration({
