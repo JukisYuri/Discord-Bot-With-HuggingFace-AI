@@ -58,8 +58,9 @@ let isOnBreak = false;
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bỏ qua tin nhắn từ bot
     if (!message.content || message.content.startsWith(IGNORE_PREFIX)) return; // Bỏ qua lệnh hoặc tin nhắn không hợp lệ
-    
-    if (message.author.id === OWNER_ID){
+    if (message.author.id !== OWNER_ID) return;
+    if (!CHANNELS.includes(message.channelId) && !message.mentions.users.has(client.user.id)) return;
+
     // Lệnh cho bot hoạt động lại
     if (isOnBreak) {
         if (message.content.includes("Bắt đầu quay lại làm việc")) {
@@ -145,11 +146,7 @@ client.on('messageCreate', async (message) => {
         await message.reply(`Em đã gửi dữ liệu của <@${trackedUser}> sang kênh đích.`);
         return;
     }
-
-} else {
-    return;
-}
-
+    
     // Kiểm tra xem tin nhắn có phải là một reply đến bot
     if (message.reference) {
         const referencedMessage = await message.channel.messages.fetch(message.reference.messageId);
@@ -186,10 +183,6 @@ client.on('messageCreate', async (message) => {
             }
         }
     }
-
-    // Chỉ phản hồi tin nhắn từ chủ nhân
-    if (message.author.id !== OWNER_ID) return;
-    if (!CHANNELS.includes(message.channelId) && !message.mentions.users.has(client.user.id)) return;
 
     let botActive = false;
     try {
