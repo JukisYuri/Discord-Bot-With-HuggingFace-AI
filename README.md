@@ -10,4 +10,4 @@ Tệp này được sử dụng để lưu trữ các thông tin nhạy cảm nh
 Đây là tệp chính để chạy bot. Khi khởi động tệp này, bot sẽ kết nối đến Discord và HuggingFace API, đồng thời thực hiện các chức năng được lập trình.
 
 ## Cách sử dụng?
-Bắt đầu bằng việc clone tất cả đoạn code về máy local, sau đó setup với 2 files `permission.js` và `.env` và khi setup xong hãy quay lại `autismbot.js` để chạy nó
+Bắt đầu bằng việc clone tất cả đoạn code về máy local, sau đó setup với 2 files `permission.js` và `.env` và khi setup xong hãy quay lại `index.js` để chạy nó
