@@ -59,20 +59,22 @@ client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bỏ qua tin nhắn từ bot
     if (!message.content || message.content.startsWith(IGNORE_PREFIX)) return; // Bỏ qua lệnh hoặc tin nhắn không hợp lệ
     
-    // Lệnh cho bot tạm dừng hoạt động
+    if (message.author.id === OWNER_ID){
+    // Lệnh cho bot hoạt động lại
     if (isOnBreak) {
-        if (message.content.includes("Hãy quay lại làm việc")) {
+        if (message.content.includes("Bắt đầu quay lại làm việc")) {
             isOnBreak = false;
             await message.channel.sendTyping();
-            await message.reply("Em đã quay lại làm việc, thưa chủ nhân!");
+            await message.reply("Vâng!, thưa chủ nhân, em đã quay lại làm việc");
         }
         return;
     }
 
-    if (message.content.includes("Em có thể nghỉ giải lao")) {
+    // Lệnh cho bot tạm dừng hoạt động
+    if (message.content.includes("Bây giờ cô có thể nghỉ ngơi")) {
         isOnBreak = true;
         await message.channel.sendTyping();
-        await message.reply("Vâng, em sẽ nghỉ giải lao theo lệnh của chủ nhân.");
+        await message.reply("Như một món quà chủ nhân ban cho em, em sẽ tạm dừng hoạt động");
         return;
     }
 
@@ -143,6 +145,10 @@ client.on('messageCreate', async (message) => {
         await message.reply(`Em đã gửi dữ liệu của <@${trackedUser}> sang kênh đích.`);
         return;
     }
+
+} else {
+    return;
+}
 
     // Kiểm tra xem tin nhắn có phải là một reply đến bot
     if (message.reference) {
