@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client } = require('discord.js');
+const { Client, ActivityType } = require('discord.js');
 const { HfInference } = require('@huggingface/inference');
 const { splitMessage } = require('./utils');
 const { CHANNELS, OWNER_ID , sourceChannelId, destinationChannelId} = require('./permisson');
@@ -61,23 +61,33 @@ client.on('messageCreate', async (message) => {
     if (message.author.id !== OWNER_ID) return;
     if (!CHANNELS.includes(message.channelId) && !message.mentions.users.has(client.user.id)) return;
 
-    await message.channel.sendTyping();
     // Lệnh cho bot hoạt động lại
     if (isOnBreak) {
         if (message.content.includes("Bắt đầu quay lại làm việc")) {
             isOnBreak = false;
+            await message.channel.sendTyping();
+            await client.user.setPresence({
+                activities: [{ name: "Đang làm việc theo lệnh", type: ActivityType.Watching }],
+                status: "online",
+            });
             await message.reply("Vâng!, thưa chủ nhân, em đã quay lại làm việc");
         }
         return;
-    }
+    }    
 
     // Lệnh cho bot tạm dừng hoạt động
     if (message.content.includes("Bây giờ cô có thể nghỉ ngơi")) {
+        await message.channel.sendTyping();
         isOnBreak = true;
+        await client.user.setPresence({
+            activities: [{ name: "Đang nghỉ ngơi sau kì phục vụ~", type: ActivityType.Streaming }],
+            status: "idle",
+        });
         await message.reply("Như một món quà chủ nhân ban cho em, em sẽ tạm dừng hoạt động");
         return;
     }
 
+    await message.channel.sendTyping();
     // Lệnh theo dõi người dùng
     if (message.content.startsWith("Hầu gái nhận lệnh, hãy theo dõi")) {
         const mention = message.mentions.users.first();
@@ -186,7 +196,7 @@ client.on('messageCreate', async (message) => {
         }
 
         // Lệnh chuyển tin nhắn từ một kênh sang kênh khác
-        if (message.content.includes("Chuyển hết tin nhắn từ kênh này sang kênh của tôi")) {
+        if (message.content.includes("Chuyển hết tất cả tin nhắn sao lưu vào đây")) {
             await message.reply("Vâng, đã nghe lệnh!!")
             await transferMessages(sourceChannelId, destinationChannelId);
             return;
